@@ -1,5 +1,3 @@
-//
-//  JojoView.swift
 //  NameCard
 //
 //  Created by Joseph-M2 on 2025/9/9.
@@ -8,7 +6,7 @@
 import SwiftUI
 
 // 主視圖，用來呈現整張名片
-struct BusinessCardView: View {
+struct NameCardView: View {
     
     // MARK: - 屬性 (Properties)
     
@@ -116,11 +114,10 @@ struct BusinessCardView: View {
         HStack(alignment: .top, spacing: 10) {
             // 左側行號
             VStack(alignment: .trailing, spacing: 4) {
-                // 圖片中的行號是不連續的，這裡忠實還原
                 Text("1")
                 Text("2")
                 Text("3")
-                Text("4") // title 的第二行沒有行號，所以這裡對應 linkedin
+                Text("4")
                 Text("5")
                 Text("6")
                 Text("7")
@@ -174,5 +171,5 @@ struct BusinessCardView: View {
 
 // MARK: - 預覽 (Preview)
 #Preview {
-    BusinessCardView()
+    NameCardView()
 }
