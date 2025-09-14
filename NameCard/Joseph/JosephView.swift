@@ -6,7 +6,7 @@
 import SwiftUI
 
 // 主視圖，用來呈現整張名片
-struct NameCardView: View {
+struct JosephView: View {
     
     // MARK: - 屬性 (Properties)
     
@@ -71,13 +71,13 @@ struct NameCardView: View {
             // 中間檔案標題
             Text("Name Card.json")
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                .foregroundColor(secondaryTextColor)
+                .foregroundStyle(secondaryTextColor)
             
             Spacer()
 
             // 右側漢堡選單圖示
             Image(systemName: "line.3.horizontal")
-                .foregroundColor(secondaryTextColor)
+                .foregroundStyle(secondaryTextColor)
                 .frame(width: 60)
         }
         .frame(height: 40)
@@ -104,7 +104,7 @@ struct NameCardView: View {
             Image(systemName: "ellipsis")
         }
         .font(.system(size: 14))
-        .foregroundColor(secondaryTextColor)
+        .foregroundStyle(secondaryTextColor)
         .padding(.horizontal)
         .padding(.bottom, 8)
     }
@@ -123,45 +123,44 @@ struct NameCardView: View {
                 Text("7")
             }
             .font(.system(size: 16, design: .monospaced))
-            .foregroundColor(secondaryTextColor)
+            .foregroundStyle(secondaryTextColor)
             
             // 右側 JSON 程式碼
             VStack(alignment: .leading, spacing: 4) {
-//                Text("Business Card.json")
                 Text("{")
                 
                 // 使用 `+` 運算子組合不同顏色的 Text
                 Text("  \"name\": ")
-                    .foregroundColor(jsonKeyColor)
+                    .foregroundStyle(jsonKeyColor)
                 + Text("\"Joseph Tao\",")
-                    .foregroundColor(jsonValueColor)
+                    .foregroundStyle(jsonValueColor)
                 
                 // 處理 title 的多行顯示
                 HStack(alignment: .top, spacing: 0) {
                     Text("  \"title\": ")
-                        .foregroundColor(jsonKeyColor)
+                        .foregroundStyle(jsonKeyColor)
                     
                     HStack(alignment: .top, spacing: -30) {
                         Text("Captain Mars Vessel ")
                         Text("of the ")
                     }
-                    .foregroundColor(jsonValueColor)
+                    .foregroundStyle(jsonValueColor)
                 }
                 
                 HStack(alignment: .top, spacing: 0) {
                     Text("  \"linkedin\": ")
-                        .foregroundColor(jsonKeyColor)
+                        .foregroundStyle(jsonKeyColor)
                     
                     HStack(alignment: .top, spacing: -10) {
                         Text("linkedin in/jzzt")
                         Text(".com/")
                     }
-                        .foregroundColor(jsonValueColor)
+                        .foregroundStyle(jsonValueColor)
                 }
                 Text("}")
             }
             .font(.system(size: 16, weight: .medium, design: .monospaced))
-            .foregroundColor(defaultTextColor)
+            .foregroundStyle(defaultTextColor)
             // 使用 .leading 對齊，確保程式碼靠左
             .frame(maxWidth: .infinity, alignment: .leading)
         }
