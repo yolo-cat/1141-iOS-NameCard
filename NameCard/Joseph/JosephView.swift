@@ -133,7 +133,7 @@ struct NameCardView: View {
                 // 使用 `+` 運算子組合不同顏色的 Text
                 Text("  \"name\": ")
                     .foregroundColor(jsonKeyColor)
-                + Text("Joseph Tao")
+                + Text("\"Joseph Tao\",")
                     .foregroundColor(jsonValueColor)
                 
                 // 處理 title 的多行顯示
