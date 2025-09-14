@@ -170,5 +170,5 @@ struct JosephView: View {
 
 // MARK: - 預覽 (Preview)
 #Preview {
-    NameCardView()
+    JosephView()
 }
