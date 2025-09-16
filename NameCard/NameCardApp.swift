@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct NameCardApp: App {
@@ -13,5 +14,8 @@ struct NameCardApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: [StoredContact.self,
+            ContactCategory.self]
+        )
     }
 }
