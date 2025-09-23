@@ -14,9 +14,9 @@ class StoredContact {
     var name: String
     var title: String
     var email: String
-    
+
     var category: ContactCategory?
-    
+
     init(id: UUID = UUID(), name: String, title: String, email: String) {
         self.id = id
         self.name = name
