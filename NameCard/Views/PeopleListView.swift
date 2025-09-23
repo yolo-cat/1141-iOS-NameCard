@@ -1,16 +1,20 @@
 import SwiftUI
 
 struct PeopleListView: View {
-    let people = Person.sampleData
-    
+    // make people mutable so we can add new entries
+    @State private var people: [Person] = Person.sampleData
+
+    // sheet presentation state
+    @State private var showingAddPerson = false
+
     var teachersSorted: [Person] {
         people.filter { $0.type == .teacher }.sorted { $0.name < $1.name }
     }
-    
+
     var studentsSorted: [Person] {
         people.filter { $0.type == .student }.sorted { $0.name < $1.name }
     }
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -21,7 +25,7 @@ struct PeopleListView: View {
                         }
                     }
                 }
-                
+
                 Section("Students") {
                     ForEach(studentsSorted) { person in
                         NavigationLink(destination: PersonDetailView(person: person)) {
@@ -29,33 +33,45 @@ struct PeopleListView: View {
                         }
                     }
                 }
-                
-//                在Section "Contacts" 文字水平放置一個 ＋ 號按鈕，點擊後顯示一個彈出視窗，讓使用者可以新增聯絡人
-                
-//                HStack {
-//                    Text("Contacts")
-//                    Spacer()
-//                    Button(action: {
-//                        // 新增聯絡人按鈕的動作
-//                    }) {
-//                        Image(systemName: "plus.circle.fill")
-//                            .font(.title2)
-//                            .foregroundStyle(.blue)
-//                    }
-//                }
-                Section("Contacts") {
+
+                // Contacts section header with a + button aligned horizontally
+                Section(
+                    header:
+                        HStack {
+                            Text("Contacts")
+                            Spacer()
+                            Button(action: {
+                                showingAddPerson = true
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.blue)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Add Person")
+                        }
+                ) {
                     NavigationLink(destination: ContactsListView()) {
                         Text("View All Contacts")
                     }
                 }
-                .navigationTitle("Directory")
+            }
+            .navigationTitle("Directory")
+            .sheet(isPresented: $showingAddPerson) {
+                AddPersonView { newPerson in
+                    // append new person and dismiss sheet
+                    people.append(newPerson)
+                    showingAddPerson = false
+                }
             }
         }
     }
-    
+
+    // MARK: - Subviews
+
     struct PersonRowView: View {
         let person: Person
-        
+
         var body: some View {
             HStack {
                 VStack(alignment: .leading) {
@@ -74,10 +90,10 @@ struct PeopleListView: View {
             .padding(.vertical, 2)
         }
     }
-    
+
     struct PersonDetailView: View {
         let person: Person
-        
+
         var body: some View {
             Group {
                 if let contact = person.contact {
@@ -101,9 +117,9 @@ struct PeopleListView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
+
     struct ContactsListView: View {
-        //    建立一個聯絡人頁面空白視圖
+        // 建立一個聯絡人頁面空白視圖
         var body: some View {
             Text("Contacts List View")
                 .font(.largeTitle)
@@ -113,6 +129,60 @@ struct PeopleListView: View {
         }
     }
 }
+
+// MARK: - Add Person View
+
+struct AddPersonView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var name: String = ""
+    @State private var type: PersonType = .student
+
+    // onSave closure to pass the new person back to the caller
+    var onSave: (Person) -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Name") {
+                    TextField("Full name", text: $name)
+                }
+
+                Section("Type") {
+                    Picker("Type", selection: $type) {
+                        ForEach(PersonType.allCases, id: \.self) { t in
+                            Text(t.rawValue.dropLast()).tag(t)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                // You can expand to include contact creation fields here.
+            }
+            .navigationTitle("Add Person")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let newPerson = Person(
+                            name: name.trimmingCharacters(in: .whitespaces), type: type,
+                            contact: nil)
+                        onSave(newPerson)
+                        dismiss()
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Preview
 
 #Preview {
     PeopleListView()
