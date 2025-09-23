@@ -1,11 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct PeopleListView: View {
-    // make people mutable so we can add new entries
+    // Keep static data for Teachers and Students
     @State private var people: [Person] = Person.sampleData
 
-    // sheet presentation state
-    @State private var showingAddPerson = false
+    // sheet presentation state for adding a contact
+    @State private var showingAddContact = false
 
     var teachersSorted: [Person] {
         people.filter { $0.type == .teacher }.sorted { $0.name < $1.name }
@@ -34,21 +35,21 @@ struct PeopleListView: View {
                     }
                 }
 
-                // Contacts section header with a + button aligned horizontally
+                // Contacts section now uses SwiftData
                 Section(
                     header:
                         HStack {
                             Text("Contacts")
                             Spacer()
                             Button(action: {
-                                showingAddPerson = true
+                                showingAddContact = true
                             }) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.title2)
                                     .foregroundStyle(.blue)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Add Person")
+                            .accessibilityLabel("Add Contact")
                         }
                 ) {
                     NavigationLink(destination: ContactsListView()) {
@@ -57,17 +58,13 @@ struct PeopleListView: View {
                 }
             }
             .navigationTitle("Directory")
-            .sheet(isPresented: $showingAddPerson) {
-                AddPersonView { newPerson in
-                    // append new person and dismiss sheet
-                    people.append(newPerson)
-                    showingAddPerson = false
-                }
+            .sheet(isPresented: $showingAddContact) {
+                AddContactView()
             }
         }
     }
 
-    // MARK: - Subviews
+    // MARK: - Subviews for static data
 
     struct PersonRowView: View {
         let person: Person
@@ -117,49 +114,63 @@ struct PeopleListView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
+}
 
-    struct ContactsListView: View {
-        // 建立一個聯絡人頁面空白視圖
-        var body: some View {
-            Text("Contacts List View")
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
-                .navigationTitle("Contacts")
-                .navigationBarTitleDisplayMode(.inline)
+// MARK: - SwiftData-powered Contact Views
+
+struct ContactsListView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \StoredContact.name) private var contacts: [StoredContact]
+
+    var body: some View {
+        List {
+            ForEach(contacts) { contact in
+                VStack(alignment: .leading) {
+                    Text(contact.name)
+                        .font(.headline)
+                    Text(contact.title)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text(contact.email)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .onDelete(perform: deleteContacts)
+        }
+        .navigationTitle("Contacts")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func deleteContacts(at offsets: IndexSet) {
+        for offset in offsets {
+            let contact = contacts[offset]
+            modelContext.delete(contact)
         }
     }
 }
 
-// MARK: - Add Person View
-
-struct AddPersonView: View {
+struct AddContactView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     @State private var name: String = ""
-    @State private var type: PersonType = .student
-
-    // onSave closure to pass the new person back to the caller
-    var onSave: (Person) -> Void
+    @State private var title: String = ""
+    @State private var email: String = ""
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Name") {
+                Section("Contact Details") {
                     TextField("Full name", text: $name)
+                    TextField("Title", text: $title)
+                    TextField("Email", text: $email)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
                 }
 
-                Section("Type") {
-                    Picker("Type", selection: $type) {
-                        ForEach(PersonType.allCases, id: \.self) { t in
-                            Text(t.rawValue.dropLast()).tag(t)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                }
-
-                // You can expand to include contact creation fields here.
             }
-            .navigationTitle("Add Person")
+            .navigationTitle("Add Contact")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -169,10 +180,12 @@ struct AddPersonView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let newPerson = Person(
-                            name: name.trimmingCharacters(in: .whitespaces), type: type,
-                            contact: nil)
-                        onSave(newPerson)
+                        let newContact = StoredContact(
+                            name: name.trimmingCharacters(in: .whitespaces),
+                            title: title.trimmingCharacters(in: .whitespaces),
+                            email: email.trimmingCharacters(in: .whitespaces)
+                        )
+                        modelContext.insert(newContact)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -182,8 +195,10 @@ struct AddPersonView: View {
     }
 }
 
+
 // MARK: - Preview
 
 #Preview {
     PeopleListView()
+        .modelContainer(for: StoredContact.self, inMemory: true)
 }
