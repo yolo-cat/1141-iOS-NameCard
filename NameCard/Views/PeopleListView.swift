@@ -2,6 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct PeopleListView: View {
+    @Environment(\.modelContext) private var modelContext
+
+    // Query for SwiftData contacts
+    @Query(sort: \StoredContact.name) private var contacts: [StoredContact]
+
     // Keep static data for Teachers and Students
     @State private var people: [Person] = Person.sampleData
 
@@ -35,7 +40,7 @@ struct PeopleListView: View {
                     }
                 }
 
-                // Contacts section now uses SwiftData
+                // Contacts section now displays contacts directly
                 Section(
                     header:
                         HStack {
@@ -52,15 +57,32 @@ struct PeopleListView: View {
                             .accessibilityLabel("Add Contact")
                         }
                 ) {
-                    NavigationLink(destination: ContactsListView()) {
-                        Text("View All Contacts")
+                    ForEach(contacts) { contact in
+                        VStack(alignment: .leading) {
+                            Text(contact.name)
+                                .font(.headline)
+                            Text(contact.title)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text(contact.email)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .onDelete(perform: deleteContacts)
                 }
             }
             .navigationTitle("Directory")
             .sheet(isPresented: $showingAddContact) {
                 AddContactView()
             }
+        }
+    }
+
+    private func deleteContacts(at offsets: IndexSet) {
+        for offset in offsets {
+            let contact = contacts[offset]
+            modelContext.delete(contact)
         }
     }
 
@@ -117,38 +139,6 @@ struct PeopleListView: View {
 }
 
 // MARK: - SwiftData-powered Contact Views
-
-struct ContactsListView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \StoredContact.name) private var contacts: [StoredContact]
-
-    var body: some View {
-        List {
-            ForEach(contacts) { contact in
-                VStack(alignment: .leading) {
-                    Text(contact.name)
-                        .font(.headline)
-                    Text(contact.title)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(contact.email)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .onDelete(perform: deleteContacts)
-        }
-        .navigationTitle("Contacts")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func deleteContacts(at offsets: IndexSet) {
-        for offset in offsets {
-            let contact = contacts[offset]
-            modelContext.delete(contact)
-        }
-    }
-}
 
 struct AddContactView: View {
     @Environment(\.dismiss) private var dismiss
